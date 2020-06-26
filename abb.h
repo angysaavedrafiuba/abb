@@ -2,6 +2,7 @@
 #define ABB_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /*---------------------------------------------------
                 TIPOS Y ESTRUCTURAS
