@@ -77,11 +77,12 @@ nodo_abb_t* abb_buscar( abb_t *abb, const char *clave ) {
 }
 
 bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
-	nodo_abb_t *nodo;
+	nodo_abb_t *nodo; //nodo donde guardaremos el dato
 	if( abb_cantidad(arbol) == 0 ) {
 		nodo = nodo_crear();
 		if( !nodo ) return false;
 		arbol->raiz = nodo;
+		arbol->cant ++;
 	}
 	else {
 		nodo_abb_t *nodo_aux = abb_buscar( arbol, clave );
@@ -95,11 +96,13 @@ bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
 			nodo_aux->der = nodo_crear();
 			if( !nodo_aux->der ) return false;
 			nodo = nodo_aux->der;
+			arbol->cant ++;
 		}
 		else if( comp < 0 ) {
 			nodo_aux->izq = nodo_crear();
 			if( !nodo_aux->izq ) return false;
 			nodo = nodo_aux->izq;
+			arbol->cant ++;
 		}
 	}
 	nodo->clave = strdup(clave);
