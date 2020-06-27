@@ -71,9 +71,13 @@ nodo_abb_t* abb_buscar_rec( nodo_abb_t *raiz, const char *clave, abb_comparar_cl
 // En caso de que no esté en el ABB, se devuelve el nodo 
 // que lo tendria como hijo si existiera.
 // pre: se inicializó el abb y tiene al menos 1 elemento 
-nodo_abb_t* abb_buscar( abb_t *abb, const char *clave ) {
+nodo_abb_t* abb_buscar( const abb_t *abb, const char *clave ) {
 	nodo_abb_t *nodo = abb_buscar_rec( abb->raiz, clave, abb->comparar );
 	return nodo;
+}
+
+size_t abb_cantidad( abb_t *arbol ) {
+	return arbol->cant;
 }
 
 bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
@@ -108,4 +112,15 @@ bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
 	nodo->clave = strdup(clave);
 	nodo->dato = dato;
 	return true;
+}
+
+void *abb_obtener( const abb_t *arbol, const char *clave ) {
+	if( arbol->cant == 0 )
+		return NULL;
+	
+	nodo_abb_t *nodo = abb_buscar( arbol, clave );
+	if( strcmp( clave, nodo->clave ) == 0 )
+		return nodo->clave;
+
+	return NULL;
 }
