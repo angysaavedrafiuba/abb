@@ -96,6 +96,33 @@ void prueba_iter_interno_sin_corte() {
   abb_destruir(ejemplo);
 }
 
+bool imprimir_top_3(const char* clave, void *dato, void *extra) {
+  int *contador = extra;
+  printf("%d. %s\n", ++(*contador), clave);
+  return *contador < 3;
+}
+
+void prueba_iter_interno_con_corte() {
+  printf("------INICIO PRUEBAS ITERADOR INTERNO CON CORTE\n");
+
+  abb_t *ejemplo = abb_crear(strcmp, free);
+  int contador = 0;
+  void *valores[10];
+  char str[2];
+  
+  for (int i = 0; i < 10; i++) {
+    valores[i] = malloc(sizeof(char));
+    sprintf(str, "%d", rand() % 10);
+    abb_guardar(ejemplo, str, valores[i]);
+  }
+
+  abb_in_order(ejemplo, imprimir_top_3, &contador);
+  //abb_in_order(ejemplo, imprimir, NULL);
+  //printf("contador %d\n", contador);
+  print_test("Itera con condicion de corte ", contador == 3);
+  abb_destruir(ejemplo);
+}
+
 void pruebas_abb_alumno() {
 	prueba_crear_abb_destruir_free();
 	prueba_crear_abb_destruir_funcion();
@@ -104,4 +131,5 @@ void pruebas_abb_alumno() {
 	prueba_destruir_abb_no_vacio_con_free();
 	prueba_destruir_abb_no_vacio_con_funcion();
 	prueba_iter_interno_sin_corte();
+	prueba_iter_interno_con_corte();
 }
