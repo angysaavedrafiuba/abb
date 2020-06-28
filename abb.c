@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "abb.h"
+#include "pila.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -16,6 +17,10 @@ struct abb{
 	size_t cantidad;
 	abb_destruir_dato_t destruir;
 	abb_comparar_clave_t comparar;
+};
+
+struct abb_iter {
+	pila_t* pila;
 };
 
 /*---------------------------------------------
@@ -137,4 +142,59 @@ bool abb_in_order_rec(nodo_abb_t* raiz, bool visitar(const char *, void *, void 
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra){
 	abb_in_order_rec(arbol->raiz, visitar, extra);
+}
+
+bool apilar_rama_izq(nodo_abb_t* nodo, pila_t* pila){
+	if (!nodo) return true;
+
+	if (!pila_apilar(pila, nodo)) return false;
+
+	return apilar_rama_izq(nodo->izq, pila);
+}
+
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
+	abb_iter_t* abb_iter = malloc(sizeof(abb_iter_t));
+
+	if(!abb_iter) return NULL;
+
+	abb_iter->pila = pila_crear();
+
+	if(!abb_iter->pila){
+		free(abb_iter);
+		return NULL;
+	}
+
+	if(!apilar_rama_izq(arbol->raiz, abb_iter->pila)){
+		pila_destruir(abb_iter->pila);
+		free(abb_iter);
+		return NULL;
+	}
+
+	return abb_iter;
+}
+
+
+bool abb_iter_in_avanzar(abb_iter_t *iter){
+	nodo_abb_t* actual = pila_desapilar(iter->pila);
+
+	if(!actual) return false;
+
+	if(actual->der) 
+		return apilar_rama_izq(actual->der, iter->pila);
+
+	return true;
+}
+
+
+const char *abb_iter_in_ver_actual(const abb_iter_t *iter){
+	return ((nodo_abb_t*)pila_ver_tope(iter->pila))->clave;
+}
+
+bool abb_iter_in_al_final(const abb_iter_t *iter){
+	return pila_esta_vacia(iter->pila);
+}
+
+void abb_iter_in_destruir(abb_iter_t* iter){
+	pila_destruir(iter->pila);
+	free(iter);
 }

@@ -71,7 +71,6 @@ void prueba_destruir_abb_no_vacio_con_funcion() {
   print_test("abb destruido", true);
 }
 
-
 //esta prueba creo que deberiamos cambiarla antes de entregar, pero la dejo mientras porque para probar es útil
 bool imprimir(const char* clave, void *dato, void *extra) {
  printf("clave: |%s|\n", clave);
@@ -121,6 +120,31 @@ void prueba_iter_interno_con_corte() {
   abb_destruir(ejemplo);
 }
 
+void prueba_iter_externo() {
+	printf("------INICIO PRUEBAS ITERADOR EXTERNO\n");
+	abb_t *ejemplo = abb_crear(strcmp, abb_destruir_aux);
+ 	void *valores[10];
+  	char str[2];
+
+  	for (int i = 0; i < 10; i++) {
+    	valores[i] = abb_crear(strcmp, free);
+    	sprintf(str, "%d", rand() % 10);
+    	abb_guardar(ejemplo, str, valores[i]);
+  	}
+
+  	abb_iter_t* abb_iter = abb_iter_in_crear(ejemplo);
+
+	while(!abb_iter_in_al_final(abb_iter)) {
+    	const char* clave = abb_iter_in_ver_actual(abb_iter);
+    	printf("Actual clave %s\n", clave);
+    	abb_iter_in_avanzar(abb_iter);
+	}
+
+	abb_iter_in_destruir(abb_iter);
+
+  	abb_destruir(ejemplo);
+}
+
 void pruebas_abb_alumno() {
 	prueba_crear_abb_destruir_free();
 	prueba_crear_abb_destruir_funcion();
@@ -130,4 +154,5 @@ void pruebas_abb_alumno() {
 	prueba_destruir_abb_no_vacio_con_funcion();
 	prueba_iter_interno_sin_corte();
 	prueba_iter_interno_con_corte();
+	prueba_iter_externo();
 }
