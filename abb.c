@@ -120,8 +120,7 @@ void abb_destruir_rec(nodo_abb_t* raiz, abb_destruir_dato_t destruir){
 }
 
 void abb_destruir(abb_t *arbol){
-	if (arbol->cantidad > 0)
-		abb_destruir_rec(arbol->raiz, arbol->destruir);
+	abb_destruir_rec(arbol->raiz, arbol->destruir);
 	free(arbol);
 }
 
