@@ -41,6 +41,7 @@ size_t abb_cantidad(abb_t *arbol){
 }
 
 nodo_abb_t* abb_buscar( nodo_abb_t *raiz, const char *clave, abb_comparar_clave_t comparar, nodo_abb_t** padre) {
+	*padre = raiz;
 	int comparacion = comparar( clave, raiz->clave );
 	nodo_abb_t* nodo_resultado = NULL;
 
@@ -48,16 +49,16 @@ nodo_abb_t* abb_buscar( nodo_abb_t *raiz, const char *clave, abb_comparar_clave_
 		nodo_resultado = raiz;
 	}
 	else if( (comparacion > 0) && (raiz->der != NULL) ) {
-		nodo_resultado = abb_buscar( raiz->der, clave, comparar, &raiz );
+		nodo_resultado = abb_buscar( raiz->der, clave, comparar, padre );
 	}
 	else if( (comparacion < 0) && (raiz->izq != NULL) ) {
-		nodo_resultado = abb_buscar( raiz->izq, clave, comparar, &raiz );
+		nodo_resultado = abb_buscar( raiz->izq, clave, comparar, padre );
 	}
 	return nodo_resultado;
 }
 
 bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
-	nodo_abb_t *nodo; //nodo donde guardaremos el dato
+	nodo_abb_t *nodo;
 	if( abb_cantidad(arbol) == 0 ) {
 		nodo = calloc(1, sizeof(nodo_abb_t));
 		if( !nodo ) return false;
@@ -65,8 +66,9 @@ bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
 		arbol->cantidad++;
 	}
 	else {
-		nodo_abb_t* padre = arbol->raiz;
+		nodo_abb_t *padre = NULL;
 		nodo_abb_t *nodo_aux = abb_buscar(arbol->raiz, clave, arbol->comparar, &padre);
+
 		if(nodo_aux) {
 			free( nodo_aux->clave );
 			arbol->destruir( nodo_aux->dato );
@@ -77,7 +79,6 @@ bool abb_guardar( abb_t *arbol, const char *clave, void *dato ) {
 			if( !nodo ) return false;
 
 			int comp = arbol->comparar(clave, padre->clave);
-
 			if( comp > 0 )
 				padre->der = nodo;
 			else if( comp < 0 )
@@ -111,7 +112,7 @@ void abb_destruir_rec(nodo_abb_t* raiz, abb_destruir_dato_t destruir){
 	if(!raiz) return;
 
 	abb_destruir_rec(raiz->izq, destruir);
-	abb_destruir_rec(raiz->der, destruir);
+	abb_destruir_rec(raiz->der, destruir);	
 
 	free(raiz->clave);
 	destruir(raiz->dato);
@@ -123,4 +124,5 @@ void abb_destruir(abb_t *arbol){
 		abb_destruir_rec(arbol->raiz, arbol->destruir);
 	free(arbol);
 }
+
 

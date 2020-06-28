@@ -49,7 +49,6 @@ void prueba_destruir_abb_no_vacio_con_free() {
     abb_guardar(ejemplo, str, valores[i]);
   }
 
-  printf("Cantidad %d\n", (int)abb_cantidad(ejemplo));
   print_test("abb después de insertar valores NO está vacio", abb_cantidad(ejemplo));
   abb_destruir(ejemplo);
   print_test("abb destruido", true);
