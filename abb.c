@@ -124,12 +124,15 @@ void abb_destruir(abb_t *arbol){
 	free(arbol);
 }
 
-void abb_in_order_rec(nodo_abb_t* raiz, bool visitar(const char *, void *, void *), void *extra){
-	if (!raiz) return;
-	abb_in_order_rec(raiz->izq, visitar, extra);
+bool abb_in_order_rec(nodo_abb_t* raiz, bool visitar(const char *, void *, void *), void *extra){
+	if (!raiz) return true;
+	if (!abb_in_order_rec(raiz->izq, visitar, extra))
+		return false;
 	if (!visitar(raiz->clave, raiz->dato, extra))
-		return;
-	abb_in_order_rec(raiz->der, visitar, extra);
+		return false;
+	if (!abb_in_order_rec(raiz->der, visitar, extra))
+		return false;
+	return true;
 }
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra){

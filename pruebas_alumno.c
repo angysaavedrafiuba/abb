@@ -117,8 +117,6 @@ void prueba_iter_interno_con_corte() {
   }
 
   abb_in_order(ejemplo, imprimir_top_3, &contador);
-  //abb_in_order(ejemplo, imprimir, NULL);
-  //printf("contador %d\n", contador);
   print_test("Itera con condicion de corte ", contador == 3);
   abb_destruir(ejemplo);
 }
