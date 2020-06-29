@@ -124,7 +124,8 @@ void abb_destruir_rec(nodo_abb_t* raiz, abb_destruir_dato_t destruir){
 	abb_destruir_rec(raiz->der, destruir);	
 
 	free(raiz->clave);
-	destruir(raiz->dato);
+	if (destruir)
+		destruir(raiz->dato);
 	free(raiz);
 }
 
@@ -140,6 +141,7 @@ void abb_destruir(abb_t *arbol){
 // pre: el nodo fue inicializado
 void *borrar_nodo( nodo_abb_t *nodo ) {
 	void *dato_aux = nodo->dato;
+	free(nodo->clave);
 	free(nodo);
 	return dato_aux;
 }
@@ -212,7 +214,7 @@ size_t ver_cant_hijos( nodo_abb_t *nodo ) {
 // primitiva auxiliar para abb_borrar
 // borra un elemento en caso de que el nodo tenga dos hijos
 void *borrar_con_dos_hijos( nodo_abb_t *nodo, abb_t *arbol ) {
-	nodo_abb_t *padre_reemplazo = NULL;
+	nodo_abb_t *padre_reemplazo = nodo;
 
 	nodo_abb_t *reemplazo = buscar_reemplazo( nodo->der, &padre_reemplazo );
 	char *clave_reemplazo = strdup( reemplazo->clave );
