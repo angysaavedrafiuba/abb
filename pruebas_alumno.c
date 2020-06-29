@@ -71,6 +71,65 @@ void prueba_destruir_abb_no_vacio_con_funcion() {
   print_test("abb destruido", true);
 }
 
+void prueba_abb_borrar_un_elemento() {
+  printf("------Inicio pruebas borrar un elemento y NULL\n");
+  abb_t *ejemplo = abb_crear(strcmp, NULL);
+  char *str = "str";
+  int a = 1;
+
+  print_test("prueba borrar con arbol vacio", abb_borrar(ejemplo, "sata") == NULL);
+  print_test("ingresando un elemento al arbol", abb_guardar(ejemplo, str, &a));
+  print_test("la cantidad ahora es 1", abb_cantidad(ejemplo) == 1);
+  print_test("prueba borrar con una clave que no está", abb_borrar(ejemplo, "ssd") == NULL);
+  print_test("la cantidad sigue siendo 1", abb_cantidad(ejemplo) == 1);
+  print_test("prueba borrar unico elemento", abb_borrar(ejemplo, str) == &a);
+  print_test("la cantidad ahora es 0", abb_cantidad(ejemplo) == 0);
+  print_test("ingresando un dato nulo", abb_guardar(ejemplo, str, NULL));
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 1);
+  print_test("borrar devuelve el dato nulo", abb_borrar(ejemplo, str) == NULL);
+  print_test("la cantidad vuelve a ser 0", abb_cantidad(ejemplo) == 0);
+  abb_destruir(ejemplo);
+}
+
+void prueba_abb_borrar_varios_elementos() {
+  printf("------Inicio pruebas borrar muchos elementos\n");
+  abb_t *ejemplo = abb_crear(strcmp, NULL);
+  int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  char *a = "a";
+  char *b = "b";
+  char *c = "c";
+  char *d = "d";
+  char *e = "e";
+  char *f = "f";
+  char *g = "g";
+  char *h = "h";
+  char *i = "i";
+  char *j = "j";
+  abb_guardar(ejemplo, d, &arr[0]);
+  abb_guardar(ejemplo, b, &arr[1]);
+  abb_guardar(ejemplo, h, &arr[2]);
+  abb_guardar(ejemplo, a, &arr[3]);
+  abb_guardar(ejemplo, c, &arr[4]);
+  abb_guardar(ejemplo, f, &arr[5]);
+  abb_guardar(ejemplo, i, &arr[6]);
+  abb_guardar(ejemplo, e, &arr[7]);
+  abb_guardar(ejemplo, g, &arr[8]);
+  abb_guardar(ejemplo, j, &arr[9]);
+  print_test("se armó un arbol para las pruebas", true);
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 10);
+  print_test("prueba borrar un nodo sin hijos", abb_borrar(ejemplo, a) == &arr[3]);
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 9);
+  print_test("prueba borrar un nodo con hijo derecho", abb_borrar(ejemplo, b) == &arr[1]);
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 8);
+  print_test("prueba borrar un nodo con dos hijos1", abb_borrar(ejemplo, f) == &arr[5]);
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 7);
+  print_test("prueba borrar un nodo con dos hijos2", abb_borrar(ejemplo, h) == &arr[2]);
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 6);
+  print_test("prueba borrar un nodo con hijo izquierdo", abb_borrar(ejemplo, g) == &arr[8]);
+  print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 5);
+  abb_destruir(ejemplo);
+}
+
 //esta prueba creo que deberiamos cambiarla antes de entregar, pero la dejo mientras porque para probar es útil
 bool imprimir(const char* clave, void *dato, void *extra) {
  printf("clave: |%s|\n", clave);
@@ -152,6 +211,8 @@ void pruebas_abb_alumno() {
 	prueba_destruir_abb_vacio_con_funcion();
 	prueba_destruir_abb_no_vacio_con_free();
 	prueba_destruir_abb_no_vacio_con_funcion();
+  prueba_abb_borrar_un_elemento();
+  prueba_abb_borrar_varios_elementos();
 	prueba_iter_interno_sin_corte();
 	prueba_iter_interno_con_corte();
 	prueba_iter_externo();
