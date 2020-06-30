@@ -80,7 +80,8 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
 
     if (nodo_aux) {
       free(nodo_aux->clave);
-      arbol->destruir(nodo_aux->dato);
+      if(arbol->destruir)
+        arbol->destruir(nodo_aux->dato);
       nodo = nodo_aux;
     } else {
       nodo = calloc(1, sizeof(nodo_abb_t));
