@@ -45,6 +45,8 @@ size_t abb_cantidad(abb_t *arbol) { return arbol->cantidad; }
 
 nodo_abb_t *abb_buscar(nodo_abb_t *raiz, const char *clave,
                        abb_comparar_clave_t comparar, nodo_abb_t **padre) {
+  if( !raiz->clave ) return NULL;
+
   int comparacion = comparar(clave, raiz->clave);
   nodo_abb_t *nodo_resultado = NULL;
 
@@ -100,7 +102,8 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
 }
 
 void *abb_obtener(const abb_t *arbol, const char *clave) {
-  nodo_abb_t *nodo = abb_buscar(arbol->raiz, clave, arbol->comparar, NULL);
+  nodo_abb_t* padre = NULL;
+  nodo_abb_t *nodo = abb_buscar(arbol->raiz, clave, arbol->comparar, &padre);
 
   if (!nodo)
     return NULL;
@@ -109,7 +112,8 @@ void *abb_obtener(const abb_t *arbol, const char *clave) {
 }
 
 bool abb_pertenece(const abb_t *arbol, const char *clave) {
-  if (!abb_buscar(arbol->raiz, clave, arbol->comparar, NULL))
+   nodo_abb_t* padre = NULL;
+  if (!abb_buscar(arbol->raiz, clave, arbol->comparar, &padre))
     return false;
 
   return true;
