@@ -45,7 +45,7 @@ size_t abb_cantidad(abb_t *arbol) { return arbol->cantidad; }
 
 nodo_abb_t *abb_buscar(nodo_abb_t *raiz, const char *clave,
                        abb_comparar_clave_t comparar, nodo_abb_t **padre) {
-  if( !raiz->clave ) return NULL;
+  if( !raiz ) return NULL;
 
   int comparacion = comparar(clave, raiz->clave);
   nodo_abb_t *nodo_resultado = NULL;
@@ -330,7 +330,12 @@ bool abb_iter_in_avanzar(abb_iter_t *iter) {
 }
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter) {
-  return ((nodo_abb_t *)pila_ver_tope(iter->pila))->clave;
+  nodo_abb_t* tope = pila_ver_tope(iter->pila);
+  
+  if(!tope)
+    return NULL;
+
+  return tope->clave;
 }
 
 bool abb_iter_in_al_final(const abb_iter_t *iter) {

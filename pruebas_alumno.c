@@ -21,6 +21,13 @@ void prueba_crear_abb_destruir_funcion() {
   abb_destruir(ejemplo);
 }
 
+void prueba_crear_abb_destruir_NULL() {
+  printf("------Inicio pruebas crear abb con NULL\n");
+  abb_t *ejemplo = abb_crear(strcmp, NULL);
+  print_test("abb creado", ejemplo != NULL);
+  abb_destruir(ejemplo);
+}
+
 void prueba_destruir_abb_vacio_con_free() {
   printf("------Inicio pruebas destruir abb vacío con free\n");
   abb_t *ejemplo = abb_crear(strcmp, free);
@@ -35,6 +42,37 @@ void prueba_destruir_abb_vacio_con_funcion() {
   print_test("Abb tiene cantidad 0", !abb_cantidad(ejemplo));
   abb_destruir(ejemplo);
   print_test("abb destruido", true);
+}
+
+void prueba_destruir_abb_vacio_con_NULL() {
+  printf("------Inicio pruebas destruir abb vacío con NULL\n");
+  abb_t *ejemplo = abb_crear(strcmp, NULL);
+  print_test("Abb tiene cantidad 0", !abb_cantidad(ejemplo));
+  abb_destruir(ejemplo);
+  print_test("abb destruido", true);
+}
+
+void prueba_abb_esta_vacio(){
+  printf("------Inicio pruebas abb vacío\n");
+  abb_t *ejemplo = abb_crear(strcmp, free);
+  print_test("Abb tiene cantidad 0", !abb_cantidad(ejemplo));
+  print_test("Obtener clave A, es NULL, no existe", !abb_obtener(ejemplo, "A"));
+  print_test("Pertenece clave A, es false, no existe", !abb_pertenece(ejemplo, "A"));
+  print_test("Borrar clave A, es NULL, no existe", !abb_borrar(ejemplo, "A"));
+  abb_destruir(ejemplo);
+}
+
+static void prueba_iterar_abb_vacio(){
+    printf("------Inicio pruebas iterar abb vacío\n");
+    abb_t* abb = abb_crear(NULL, NULL);
+    abb_iter_t* iter = abb_iter_in_crear(abb);
+    print_test("Prueba abb iter crear iterador abb vacio", iter);
+    print_test("Prueba abb iter esta al final", abb_iter_in_al_final(iter));
+    print_test("Prueba abb iter avanzar es false", !abb_iter_in_avanzar(iter));
+    print_test("Prueba abb iter ver actual es NULL", !abb_iter_in_ver_actual(iter));
+
+    abb_iter_in_destruir(iter);
+    abb_destruir(abb);
 }
 
 void prueba_destruir_abb_no_vacio_con_free() {
@@ -213,12 +251,48 @@ void prueba_iter_externo() {
 
   abb_destruir(ejemplo);
 }
+/*
+void prueba_pertenece_abb_no_vacio() {
+  printf("------Inicio pruebas pertenece abb no vacío\n");
+  abb_t *ejemplo = abb_crear(strcmp, abb_destruir_aux);
+  void *valores[10];
+  char str[2];
+
+  for (int i = 0; i < 10; i++) {
+    valores[i] = abb_crear(strcmp, free);
+    sprintf(str, "%d", rand() % 10);
+    abb_guardar(ejemplo, str, valores[i]);
+  }
+
+  print_test("abb después de insertar valores NO está vacío",
+             abb_cantidad(ejemplo));
+  sprintf(str, "%d", 1);
+printf("obtener : %p", abb_obtener(ejemplo, str) );
+//printf("obtener : %p", abb_obtener(ejemplo, 2) );
+//printf("obtener : %p", abb_obtener(ejemplo, 3) );
+
+  print_test("Elemento pertenece ", abb_pertenece(ejemplo, str) );
+  print_test("reemplazar elementos", abb_guardar(ejemplo, str, abb_crear(strcmp, free)));
+
+  //print_test("Elemento pertenece ", abb_pertenece(ejemplo, valores[1]) );
+  //print_test("Elemento pertenece ", abb_pertenece(ejemplo, valores[2]) );
+  abb_destruir(ejemplo);
+  print_test("abb destruido", true);
+}*/
+
 
 void pruebas_abb_alumno() {
   prueba_crear_abb_destruir_free();
   prueba_crear_abb_destruir_funcion();
+  prueba_crear_abb_destruir_NULL();
+
   prueba_destruir_abb_vacio_con_free();
   prueba_destruir_abb_vacio_con_funcion();
+  prueba_destruir_abb_vacio_con_NULL();
+
+  prueba_abb_esta_vacio();
+  prueba_iterar_abb_vacio();
+
   prueba_destruir_abb_no_vacio_con_free();
   prueba_destruir_abb_no_vacio_con_funcion();
   prueba_abb_borrar_un_elemento();
@@ -226,4 +300,5 @@ void pruebas_abb_alumno() {
   prueba_iter_interno_sin_corte();
   prueba_iter_interno_con_corte();
   prueba_iter_externo();
+  //prueba_pertenece_abb_no_vacio();
 }
