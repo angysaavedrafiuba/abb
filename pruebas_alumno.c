@@ -172,7 +172,7 @@ void prueba_destruir_abb_no_vacio_con_funcion() {
 }
 
 void prueba_abb_borrar_un_elemento() {
-  printf("------Inicio pruebas borrar un elemento y NULL\n");
+  printf("------Inicio pruebas borrar con un elemento y NULL\n");
   abb_t *ejemplo = abb_crear(strcmp, NULL);
   char *str = "str";
   int a = 1;
@@ -194,7 +194,7 @@ void prueba_abb_borrar_un_elemento() {
 }
 
 void prueba_abb_borrar_varios_elementos() {
-  printf("------Inicio pruebas borrar muchos elementos\n");
+  printf("------Inicio pruebas borrar con muchos elementos\n");
   abb_t *ejemplo = abb_crear(strcmp, NULL);
   int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   char *a = "a";
@@ -235,6 +235,38 @@ void prueba_abb_borrar_varios_elementos() {
              abb_borrar(ejemplo, g) == &arr[8]);
   print_test("la cantidad es la esperada", abb_cantidad(ejemplo) == 5);
   abb_destruir(ejemplo);
+}
+
+void pruebas_abb_volumen(size_t cantidad) {
+  printf("------Inicio pruebas volumen para abb\n");
+
+  abb_t *ejemplo = abb_crear(strcmp, NULL);
+  size_t largo_clave = 20;
+  char (*claves)[largo_clave] = malloc( cantidad * largo_clave );
+
+  size_t *valores = malloc(cantidad * sizeof(size_t));
+
+  bool ok = true;
+  for(size_t i=0; i<cantidad; i++) {
+    valores[i] = i;
+    sprintf(claves[i], "%d %zu", rand(), i);
+    ok = abb_guardar(ejemplo, claves[i], &valores[i]);
+    if(!ok) break;
+  }
+
+  print_test("prueba abb ingresar muchos elementos", ok);
+  print_test("prueba abb la cantidad de elementos es correcta", abb_cantidad(ejemplo) == cantidad);
+
+  for(size_t j=0; j<cantidad; j++) {
+    ok = ( abb_borrar(ejemplo, claves[j]) == &valores[j] );
+    if( !ok ) break;
+  }
+
+  print_test("prueba abb borrar muchos elementos", ok);
+  print_test("prueba abb la cantidad es cero", abb_cantidad(ejemplo) == 0);
+  abb_destruir(ejemplo);
+  free(claves);
+  free(valores);
 }
 
 // esta prueba creo que deberiamos cambiarla antes de entregar, pero la dejo
@@ -287,6 +319,44 @@ void prueba_iter_interno_con_corte() {
   abb_destruir(ejemplo);
 }
 
+// funcion auxiliar de prueba_volumen_iter_interno
+bool visitar_volumen(const char *clave, void *dato, void *extra) {
+  size_t *valor = (size_t*)dato;
+  *valor = 0;
+  return true;
+}
+
+void prueba_volumen_iter_interno(size_t cantidad) {
+  printf("------INICIO PRUEBAS VOLUMEN ITERADOR INTERNO\n");
+  abb_t *ejemplo = abb_crear(strcmp, NULL);
+
+  const size_t largo_clave = 20;
+  char (*claves)[largo_clave] = malloc(cantidad * largo_clave);
+
+  size_t valores[cantidad];
+
+  for (size_t i = 0; i < cantidad; i++) {
+    sprintf(claves[i], "%d %zu", rand(), i);
+    valores[i] = i;
+    abb_guardar(ejemplo, claves[i], &valores[i]);
+  }
+
+  print_test("se creó un arbol para la prueba", true);
+
+  abb_in_order(ejemplo, visitar_volumen, NULL);
+
+  bool ok = true;
+  for (unsigned j = 0; j < cantidad; j++) {
+    ok = (valores[j] == 0);
+    if(!ok) break;
+  }
+
+  print_test("iter interno pasó la prueba de volumen", ok);
+  
+  free(claves);
+  abb_destruir(ejemplo);
+}
+
 void prueba_iter_externo() {
   printf("------INICIO PRUEBAS ITERADOR EXTERNO\n");
   abb_t *ejemplo = abb_crear(strcmp, abb_destruir_aux);
@@ -312,6 +382,70 @@ void prueba_iter_externo() {
   abb_destruir(ejemplo);
 }
 
+void prueba_volumen_iter_externo(size_t largo) {
+  printf("------INICIO PRUEBAS VOLUMEN ITERADOR EXTERNO\n");
+    abb_t *ejemplo = abb_crear(strcmp, NULL);
+
+    const size_t largo_clave = 20;
+    char (*claves)[largo_clave] = malloc(largo * largo_clave);
+
+    size_t valores[largo];
+
+    /* Inserta 'largo' parejas en el abb */
+    bool ok = true;
+    for (size_t i = 0; i < largo; i++) {
+        sprintf(claves[i], "%d %zu", rand(), i);
+        valores[i] = i;
+        ok = abb_guardar(ejemplo, claves[i], &valores[i]);
+        if (!ok) break;
+        
+    }
+
+    // Prueba de iteración sobre las claves almacenadas.
+    abb_iter_t* iter = abb_iter_in_crear(ejemplo);
+    print_test("Prueba abb iterador esta al final, es false", !abb_iter_in_al_final(iter));
+
+    ok = true;
+    size_t i;
+    const char *clave;
+    size_t *valor;
+
+    for (i = 0; i < largo; i++) {
+        if ( abb_iter_in_al_final(iter) ) {
+            ok = false;
+            break;
+        }
+        clave = abb_iter_in_ver_actual(iter);
+        if ( clave == NULL ) {
+            ok = false;
+            break;
+        }
+        valor = abb_obtener(ejemplo, clave);
+        if ( valor == NULL ) {
+            ok = false;
+            break;
+        }
+        *valor = largo;
+        abb_iter_in_avanzar(iter);
+    }
+    print_test("Prueba abb iteración en volumen", ok);
+    print_test("Prueba abb iteración en volumen, recorrio todo el largo", i == largo);
+    print_test("Prueba abb iterador esta al final, es true", abb_iter_in_al_final(iter));
+
+    ok = true;
+    for (i = 0; i < largo; i++) {
+        if ( valores[i] != largo ) {
+            ok = false;
+            break;
+        }
+    }
+    print_test("Prueba abb iteración en volumen, se cambiaron todo los elementos", ok);
+
+    free(claves);
+    abb_iter_in_destruir(iter);
+    abb_destruir(ejemplo);
+}
+
 void pruebas_abb_alumno() {
   prueba_crear_abb_destruir_free();
   prueba_crear_abb_destruir_funcion();
@@ -333,7 +467,12 @@ void pruebas_abb_alumno() {
   prueba_abb_borrar_un_elemento();
   prueba_abb_borrar_varios_elementos();
 
+  pruebas_abb_volumen(10000);
+
   prueba_iter_interno_sin_corte();
   prueba_iter_interno_con_corte();
+  prueba_volumen_iter_interno(10000);
+
   prueba_iter_externo();
+  prueba_volumen_iter_externo(10000);
 }
