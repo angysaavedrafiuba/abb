@@ -41,64 +41,81 @@ abb_t *abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato) {
   return abb;
 }
 
-size_t abb_cantidad(abb_t *arbol) { return arbol->cantidad; }
+size_t abb_cantidad(abb_t *arbol) {
+  return arbol->cantidad;
+}
 
-nodo_abb_t *abb_buscar(nodo_abb_t *raiz, const char *clave,
+nodo_abb_t *abb_buscar(nodo_abb_t *nodo, const char *clave,
                        abb_comparar_clave_t comparar, nodo_abb_t **padre) {
-  if( !raiz ) return NULL;
+  if( !nodo ) return NULL;
 
-  int comparacion = comparar(clave, raiz->clave);
+  int comparacion = comparar(clave, nodo->clave);
   nodo_abb_t *nodo_resultado = NULL;
 
   if (comparacion == 0) {
-    nodo_resultado = raiz;
+    nodo_resultado = nodo;
   } else {
-    *padre = raiz;
+    *padre = nodo;
 
-    if ((comparacion > 0) && (raiz->der != NULL)) {
-      nodo_resultado = abb_buscar(raiz->der, clave, comparar, padre);
-    } else if ((comparacion < 0) && (raiz->izq != NULL)) {
-      nodo_resultado = abb_buscar(raiz->izq, clave, comparar, padre);
+    if (comparacion > 0) {
+      nodo_resultado = abb_buscar(nodo->der, clave, comparar, padre);
+    } else if (comparacion < 0) {
+      nodo_resultado = abb_buscar(nodo->izq, clave, comparar, padre);
     }
   }
 
   return nodo_resultado;
 }
 
-bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
-  nodo_abb_t *nodo;
-  if (abb_cantidad(arbol) == 0) {
-    nodo = calloc(1, sizeof(nodo_abb_t));
-    if (!nodo)
-      return false;
-    arbol->raiz = nodo;
-    arbol->cantidad++;
-  } else {
-    nodo_abb_t *padre = NULL;
-    nodo_abb_t *nodo_aux =
-        abb_buscar(arbol->raiz, clave, arbol->comparar, &padre);
+// crea, si es posible, un nodo que contiene 
+// la clave y el dato pasados por parametro
+// en caso de no poder crearse, devuelve NULL
+nodo_abb_t* nodo_crear(const char* clave, void* dato) {
+  nodo_abb_t* nodo = calloc(1, sizeof(nodo_abb_t));
+  if(!nodo) return NULL;
 
-    if (nodo_aux) {
-      free(nodo_aux->clave);
-      if(arbol->destruir)
-        arbol->destruir(nodo_aux->dato);
-      nodo = nodo_aux;
-    } else {
-      nodo = calloc(1, sizeof(nodo_abb_t));
-      if (!nodo)
-        return false;
-
-      int comp = arbol->comparar(clave, padre->clave);
-      if (comp > 0)
-        padre->der = nodo;
-      else if (comp < 0)
-        padre->izq = nodo;
-
-      arbol->cantidad++;
-    }
-  }
   nodo->clave = strdup(clave);
   nodo->dato = dato;
+  return nodo;
+}
+
+// libera el espacio pedido para el nodo
+// devuelve el dato contenido en el nodo
+// pre: el nodo fue inicializado
+void *nodo_borrar(nodo_abb_t *nodo) {
+  void *dato_aux = nodo->dato;
+  free(nodo->clave);
+  free(nodo);
+  return dato_aux;
+}
+
+bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
+  nodo_abb_t* padre = NULL;
+  nodo_abb_t *nodo_aux =
+    abb_buscar(arbol->raiz, clave, arbol->comparar, &padre);
+  
+  if(nodo_aux) {
+	  void* dato_viejo = nodo_aux->dato;
+	  if(arbol->destruir) {
+		  arbol->destruir(dato_viejo);
+	  }
+    nodo_aux->dato = dato;
+    return true;
+  }
+  
+  nodo_abb_t* nodo_nuevo = nodo_crear(clave, dato);
+  if(padre) {
+	  int comp = arbol->comparar(clave, padre->clave);
+	  if(comp > 0)
+	  	padre->der = nodo_nuevo;
+	  else if(comp < 0)
+	    padre->izq = nodo_nuevo;
+  }
+  else {
+	  arbol->raiz = nodo_nuevo;
+  }
+
+  arbol->cantidad++;
   return true;
 }
 
@@ -140,34 +157,9 @@ void abb_destruir(abb_t *arbol) {
 
 // ****************** ABB BORRAR ******************
 
-// libera el espacio pedido para el nodo
-// devuelve el dato contenido en el nodo
-// pre: el nodo fue inicializado
-void *borrar_nodo(nodo_abb_t *nodo) {
-  void *dato_aux = nodo->dato;
-  free(nodo->clave);
-  free(nodo);
-  return dato_aux;
-}
-
-// primitiva auxiliar para abb_borrar
-// borra un elemento en caso de de que el nodo no tenga hijos
-void *borrar_sin_hijos(nodo_abb_t *nodo, nodo_abb_t *padre, abb_t *arbol) {
-  if (!padre) { // el nodo a borrar es raiz
-    arbol->raiz = NULL;
-  } else {
-    if (padre->der == nodo) {
-      padre->der = NULL;
-    } else if (padre->izq == nodo) {
-      padre->izq = NULL;
-    }
-  }
-  return borrar_nodo(nodo);
-}
-
 // primitiva auxiliar para abb_borrar
 // borra un elemento en caso de que el nodo tenga un solo hijo
-void *borrar_con_un_hijo(nodo_abb_t *nodo, nodo_abb_t *padre, abb_t *arbol) {
+void *borrar_con_menos_de_dos_hijos(nodo_abb_t *nodo, nodo_abb_t *padre, abb_t *arbol) {
   nodo_abb_t *hijo = NULL;
   if (nodo->der) {
     hijo = nodo->der;
@@ -184,7 +176,7 @@ void *borrar_con_un_hijo(nodo_abb_t *nodo, nodo_abb_t *padre, abb_t *arbol) {
       padre->izq = hijo;
     }
   }
-  return borrar_nodo(nodo);
+  return nodo_borrar(nodo);
 }
 
 // primitiva auxiliar para borrar_con_dos_hijos
@@ -220,13 +212,8 @@ void *borrar_con_dos_hijos(nodo_abb_t *nodo, abb_t *arbol) {
   nodo_abb_t *reemplazo = buscar_reemplazo(nodo->der, &padre_reemplazo);
   char *clave_reemplazo = strdup(reemplazo->clave);
   void *dato_reemplazo;
-  size_t cant_hijos_reemp = ver_cant_hijos(reemplazo);
 
-  if (cant_hijos_reemp == 0) {
-    dato_reemplazo = borrar_sin_hijos(reemplazo, padre_reemplazo, arbol);
-  } else if (cant_hijos_reemp == 1) {
-    dato_reemplazo = borrar_con_un_hijo(reemplazo, padre_reemplazo, arbol);
-  }
+  dato_reemplazo = borrar_con_menos_de_dos_hijos(reemplazo, padre_reemplazo, arbol);
 
   free(nodo->clave);
   void *dato_a_devolver = nodo->dato;
@@ -248,11 +235,9 @@ void *abb_borrar(abb_t *arbol, const char *clave) {
   size_t cant_hijos = ver_cant_hijos(nodo_a_borrar);
   void *dato = NULL; // dato a devolver
 
-  if (cant_hijos == 0) {
-    dato = borrar_sin_hijos(nodo_a_borrar, padre, arbol);
-  } else if (cant_hijos == 1) {
-    dato = borrar_con_un_hijo(nodo_a_borrar, padre, arbol);
-  } else if (cant_hijos == 2) {
+  if (cant_hijos < 2) {
+    dato = borrar_con_menos_de_dos_hijos(nodo_a_borrar, padre, arbol);
+  } else {
     dato = borrar_con_dos_hijos(nodo_a_borrar, arbol);
   }
 
@@ -272,9 +257,7 @@ bool abb_in_order_rec(nodo_abb_t *raiz,
     return false;
   if (!visitar(raiz->clave, raiz->dato, extra))
     return false;
-  if (!abb_in_order_rec(raiz->der, visitar, extra))
-    return false;
-  return true;
+  return abb_in_order_rec(raiz->der, visitar, extra);
 }
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *),
